@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELSIONS | Premium Fashion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font-serif);
+            background: white;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        :root {
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --color-primary: #000;
+            --color-secondary: white;
+            --color-accent: #666;
+        }
+        .admin-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            transition: all 0.3s;
+        }
+        .admin-toggle:hover {
+            transform: scale(1.05);
+        }
+        .admin-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 420px;
+            height: 100vh;
+            background: #f5f5f5;
+            z-index: 9999;
+            overflow-y: auto;
+            transform: translateX(420px);
+            transition: transform 0.3s ease;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+        }
+        .admin-panel.open {
+            transform: translateX(0);
+        }
+        .admin-header {
+            background: #333;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .admin-header h3 {
+            font-size: 1.2rem;
+        }
+        .close-admin {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .admin-content {
+            padding: 20px;
+        }
+        .admin-section {
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .admin-section h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="color"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .form-group input[type="color"] {
+            height: 40px;
+            cursor: pointer;
+        }
+        .form-group input[type="file"] {
+            padding: 5px;
+        }
+        .logo-preview {
+            width: 100%;
+            height: 80px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .success-message {
+            background: #e8f5e9;
+            border: 1px solid #4CAF50;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        /* ============ POPUP GLASSMORPHISM ============ */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: popupFadeIn 0.4s ease-out;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        @keyframes popupFadeIn {
+            from {
+                opacity: 0;
+                backdrop-filter: blur(0px);
+            }
+            to {
+                opacity: 1;
+                backdrop-filter: blur(8px);
+            }
+        }
+
+        .popup-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 50px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: popupSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        @keyframes popupSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.08);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            color: #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        .popup-close:hover {
+            background: rgba(0, 0, 0, 0.12);
+            transform: rotate(90deg);
+        }
+
+        .popup-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        .popup-subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-family: var(--font-sans);
+        }
+
+        .popup-badge {
+            display: inline-block;
+            background: #1a1a1a;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .popup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .popup-input {
+            padding: 12px 14px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: var(--font-sans);
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .popup-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .popup-input::placeholder {
+            color: #999;
+        }
+
+        .popup-button {
+            padding: 14px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        .popup-button:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .popup-privacy {
+            font-size: 0.75rem;
+            color: #999;
+            text-align: center;
+            margin-top: 15px;
+            font-family: var(--font-sans);
+        }
+
+        /* Cerrar popup */
+        .popup-overlay.closing {
+            animation: popupFadeOut 0.4s ease-out forwards;
+        }
+
+        @keyframes popupFadeOut {
+            from {
+                opacity: 1;
+                backdrop-filter: blur(8px);
+            }
+            to {
+                opacity: 0;
+                backdrop-filter: blur(0px);
+            }
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+        nav .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        .logo-img {
+            max-height: 50px;
+            max-width: 200px;
+            object-fit: contain;
+        }
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        nav a {
+            text-decoration: none;
+            color: var(--color-primary);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            font-family: var(--font-sans);
+        }
+        nav a:hover {
+            color: var(--color-accent);
+        }
+        .hero {
+            margin-top: 80px;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.3) 100%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            text-align: center;
+            color: white;
+            z-index: 1;
+            max-width: 800px;
+            animation: heroFadeIn 1s ease-out;
+            padding: 2rem;
+        }
+
+        @keyframes heroFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .hero-text h1 {
+            font-size: clamp(3rem, 8vw, 5rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            font-family: var(--font-serif);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .hero-text p {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            font-family: var(--font-sans);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-family: var(--font-sans);
+        }
+        .btn-primary {
+            background: var(--color-primary);
+            color: var(--color-secondary);
+            border-radius: 2px;
+        }
+        .btn-primary:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+            border-radius: 2px;
+        }
+        .btn-secondary:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+        .hero-image {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 2px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+        section {
+            padding: 5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 1rem;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            font-family: var(--font-serif);
+        }
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--color-accent);
+            margin-bottom: 3rem;
+            font-family: var(--font-sans);
+            font-weight: 300;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+        .product-card {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+        }
+        .product-image {
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            background: #f0f0f0;
+            border-radius: 2px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover .product-image {
+            transform: scale(1.03);
+        }
+        .product-name {
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-primary);
+            font-family: var(--font-serif);
+        }
+        .product-price {
+            font-size: 1.3rem;
+            color: var(--color-primary);
+            font-weight: 600;
+            font-family: var(--font-sans);
+        }
+
+        /* ============ HISTORIA SECTION ============ */
+        .historia {
+            background: #faf9f7;
+            padding: 8rem 2rem;
+        }
+        .historia .section-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .historia-title {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--color-primary);
+            font-weight: 400;
+            letter-spacing: -0.5px;
+        }
+        .historia-subtitle {
+            text-align: center;
+            color: var(--color-accent);
+            margin-bottom: 4rem;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            font-family: var(--font-sans);
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        .historia-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        .historia-text h2 {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-primary);
+            font-weight: 400;
+            line-height: 1.3;
+        }
+        .historia-text p {
+            font-size: 1.05rem;
+            color: var(--color-accent);
+            line-height: 1.9;
+            margin-bottom: 1.5rem;
+            font-family: var(--font-sans);
+            font-weight: 300;
+        }
+        .historia-image {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.8s ease;
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .historia-content {
+                grid-template-columns: 1fr;
+            }
+            .historia-image {
+                height: 350px;
+            }
+        }
+
+        .newsletter {
+            background: var(--color-primary);
+            color: white;
+            text-align: center;
+            padding: 5rem 2rem;
+            border-radius: 2px;
+        }
+        .newsletter h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .newsletter p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: #ccc;
+            font-family: var(--font-sans);
+        }
+        .newsletter-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .newsletter-form input {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            background: white;
+            color: var(--color-primary);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+        }
+        .newsletter-form input::placeholder {
+            color: #999;
+        }
+        .newsletter-form button {
+            padding: 1rem 2rem;
+            background: white;
+            color: var(--color-primary);
+        }
+        footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        .footer-logo-container {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .footer-logo-img {
+            max-height: 80px;
+            max-width: 250px;
+            object-fit: contain;
+        }
+        footer p {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            color: #999;
+            line-height: 1.8;
+        }
+        @media (max-width: 768px) {
+            .admin-panel {
+                width: 100%;
+            }
+            nav ul {
+                gap: 1rem;
+                font-size: 0.85rem;
+            }
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .hero-image {
+                margin-top: 2rem;
+            }
+            .hero-buttons {
+                flex-direction: column;
+            }
+            .products-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1.5rem;
+            }
+            .newsletter-form {
+                flex-direction: column;
+            }
+            section {
+                padding: 3rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- POPUP GLASSMORPHISM -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePopup()">✕</button>
+            <div class="popup-badge">Descuento 20%</div>
+            <h2 class="popup-title">Let's Keep In Touch</h2>
+            <p class="popup-subtitle">Suscríbete a nuestro newsletter exclusivo y recibe un descuento especial en tu próxima compra.</p>
+            <form class="popup-form" onsubmit="event.preventDefault(); submitPopupForm();">
+                <input type="text" class="popup-input" id="popupNombre" placeholder="Nombres" required>
+                <input type="text" class="popup-input" id="popupApellido" placeholder="Apellidos" required>
+                <input type="email" class="popup-input" id="popupEmail" placeholder="Email" required>
+                <input type="tel" class="popup-input" id="popupCelular" placeholder="Celular" required>
+                <button type="submit" class="popup-button">Recibir Descuento</button>
+            </form>
+            <p class="popup-privacy">Privacidad garantizada. Nunca compartimos datos.</p>
+        </div>
+    </div>
+
+    <button class="admin-toggle" onclick="toggleAdmin()">🎨 Editar</button>
+
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h3>⚙️ Panel Edición</h3>
+            <button class="close-admin" onclick="toggleAdmin()">✕</button>
+        </div>
+        <div class="admin-content">
+            <div class="success-message" id="successMsg">✅ ¡Cambios guardados!</div>
+
+            <div class="admin-section">
+                <h4>🏷️ LOGOS (Imágenes Fijas)</h4>
+                <div class="form-group">
+                    <label>Logo Navbar (esquina superior izquierda):</label>
+                    <input type="file" accept="image/*" onchange="handleLogoNavbar(this)">
+                    <div class="logo-preview">
+                        <img id="logoNavbarPreview" src="" alt="Logo Preview" style="display:none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Logo Footer (centro pie de página):</label>
+                    <input type="file" accept="image/*" onchange="handleLogoFooter(this)">
+                    <div class="logo-preview">
+                        <img id="logoFooterPreview" src="" alt="Logo Preview" style="display:none;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>📝 TEXTOS - HERO (Editables)</h4>
+                <div class="form-group">
+                    <label>Título:</label>
+                    <input type="text" id="heroTitle" value="Timeless Elegance" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea id="heroDesc" onchange="saveAll()">Curated collections for the modern luxury lifestyle.</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Imagen Hero (Principal):</label>
+                    <input type="file" accept="image/*" onchange="handleHeroImage(this)">
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>👕 PRODUCTO 1</h4>
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="pname0" value="Oversized Blazer" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input type="text" id="pprice0" value="$485" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Imagen:</label>
+                    <input type="file" accept="image/*" onchange="handleProductImage(0, this)">
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>👕 PRODUCTO 2</h4>
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="pname1" value="Premium Knitwear" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input type="text" id="pprice1" value="$395" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Imagen:</label>
+                    <input type="file" accept="image/*" onchange="handleProductImage(1, this)">
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>👕 PRODUCTO 3</h4>
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="pname2" value="Linen Shirt" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input type="text" id="pprice2" value="$225" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Imagen:</label>
+                    <input type="file" accept="image/*" onchange="handleProductImage(2, this)">
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>👕 PRODUCTO 4</h4>
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="pname3" value="Tailored Pants" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input type="text" id="pprice3" value="$345" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Imagen:</label>
+                    <input type="file" accept="image/*" onchange="handleProductImage(3, this)">
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>🎨 COLORES</h4>
+                <div class="form-group">
+                    <label>Color principal:</label>
+                    <input type="color" id="colorPrimary" value="#000000" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Color secundario:</label>
+                    <input type="color" id="colorSecondary" value="#ffffff" onchange="saveAll()">
+                </div>
+                <div class="form-group">
+                    <label>Color acentos:</label>
+                    <input type="color" id="colorAccent" value="#666666" onchange="saveAll()">
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h4>✍️ TIPOGRAFÍA</h4>
+                <div class="form-group">
+                    <label>Fuente títulos:</label>
+                    <select id="fontSerif" onchange="saveAll()">
+                        <option value="Playfair Display">Playfair Display</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Lora">Lora</option>
+                        <option value="Poppins">Poppins</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fuente textos:</label>
+                    <select id="fontSans" onchange="saveAll()">
+                        <option value="Inter">Inter</option>
+                        <option value="Poppins">Poppins</option>
+                        <option value="Open Sans">Open Sans</option>
+                        <option value="Quicksand">Quicksand</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="container">
+            <div class="logo-container">
+                <img id="logoNavbar" class="logo-img" src="" alt="BELSIONS Logo">
+            </div>
+            <ul>
+                <li><a href="#collections">Collections</a></li>
+                <li><a href="#women">Women</a></li>
+                <li><a href="#men">Men</a></li>
+                <li><a href="#newsletter">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <img id="heroImg" src="https://images.unsplash.com/photo-1539533057440-7814a9d4aae9?w=1200&q=80" alt="Hero" class="hero-image">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 id="heroTitle">Timeless Elegance</h1>
+                <p id="heroDesc">Moda Premium para Personas Exigentes</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="document.getElementById('collections').scrollIntoView();">Explorar Colecciones</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="collections">
+        <h2>Featured Collections</h2>
+        <p class="section-subtitle">Carefully curated pieces for every wardrobe</p>
+        <div class="products-grid">
+            <div class="product-card">
+                <img id="product0" src="https://images.unsplash.com/photo-1556821552-28b43cb3d0a4?w=500&q=80" alt="Product" class="product-image">
+                <h3 class="product-name" id="pname0-display">Oversized Blazer</h3>
+                <p class="product-price" id="pprice0-display">$485</p>
+            </div>
+            <div class="product-card">
+                <img id="product1" src="https://images.unsplash.com/photo-1598033129519-66db0a1b9d4d?w=500&q=80" alt="Product" class="product-image">
+                <h3 class="product-name" id="pname1-display">Premium Knitwear</h3>
+                <p class="product-price" id="pprice1-display">$395</p>
+            </div>
+            <div class="product-card">
+                <img id="product2" src="https://images.unsplash.com/photo-1541099810657-40987b9e6bae?w=500&q=80" alt="Product" class="product-image">
+                <h3 class="product-name" id="pname2-display">Linen Shirt</h3>
+                <p class="product-price" id="pprice2-display">$225</p>
+            </div>
+            <div class="product-card">
+                <img id="product3" src="https://images.unsplash.com/photo-1552062407-c551eeda4bae?w=500&q=80" alt="Product" class="product-image">
+                <h3 class="product-name" id="pname3-display">Tailored Pants</h3>
+                <p class="product-price" id="pprice3-display">$345</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN HISTORIA -->
+    <section class="historia" id="historia">
+        <div class="section-container">
+            <h2 class="historia-title">Nuestra Historia</h2>
+            <p class="historia-subtitle">Conoce el corazón de BELSIONS</p>
+            <div class="historia-content">
+                <div class="historia-text">
+                    <h2>Lujo, Elegancia y Autenticidad</h2>
+                    <p>En BELSIONS creemos que la moda es más que ropa. Es una forma de expresar quién eres, un reflejo de tu personalidad y tu gusto refinado. Desde nuestros inicios, nos hemos comprometido a ofrecer piezas cuidadosamente seleccionadas que combinan elegancia atemporal con calidad excepcional.</p>
+                    <p>Cada prenda en nuestra colección ha sido elegida por nosotros porque creemos que mereces lo mejor. No buscamos seguir tendencias pasajeras, sino crear momentos icónicos contigo. Nuestra misión es hacer que cada día te sientas confiado, elegante y auténtico.</p>
+                    <p>BELSIONS no es solo una tienda, es una comunidad de personas exigentes que valoran la calidad, el diseño y la sostenibilidad. Gracias por ser parte de nuestro viaje.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1539533057440-7814a9d4aae9?w=600&q=90" alt="BELSIONS Historia" class="historia-image">
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-logo-container">
+            <img id="logoFooter" class="footer-logo-img" src="" alt="BELSIONS Logo">
+        </div>
+        <p>© 2024 BELSIONS. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js"></script>
+    <script>
+        const db = new Dexie('BelsionsDB');
+        db.version(1).stores({ data: 'key' });
+
+        function toggleAdmin() {
+            document.getElementById('adminPanel').classList.toggle('open');
+        }
+
+        async function saveAll() {
+            try {
+                const data = {
+                    heroTitle: document.getElementById('heroTitle').value,
+                    heroDesc: document.getElementById('heroDesc').value,
+                    colorPrimary: document.getElementById('colorPrimary').value,
+                    colorSecondary: document.getElementById('colorSecondary').value,
+                    colorAccent: document.getElementById('colorAccent').value,
+                    fontSerif: document.getElementById('fontSerif').value,
+                    fontSans: document.getElementById('fontSans').value,
+                    pname0: document.getElementById('pname0').value,
+                    pname1: document.getElementById('pname1').value,
+                    pname2: document.getElementById('pname2').value,
+                    pname3: document.getElementById('pname3').value,
+                    pprice0: document.getElementById('pprice0').value,
+                    pprice1: document.getElementById('pprice1').value,
+                    pprice2: document.getElementById('pprice2').value,
+                    pprice3: document.getElementById('pprice3').value,
+                    heroImg: document.getElementById('heroImg').src,
+                    logoNavbar: document.getElementById('logoNavbar').src,
+                    logoFooter: document.getElementById('logoFooter').src,
+                    product0: document.getElementById('product0').src,
+                    product1: document.getElementById('product1').src,
+                    product2: document.getElementById('product2').src,
+                    product3: document.getElementById('product3').src
+                };
+                await db.data.put({ key: 'belsionsData', value: data });
+                applyAll(data);
+                showSuccess();
+            } catch(e) {
+                console.error('Error:', e);
+            }
+        }
+
+        function applyAll(data) {
+            document.querySelector('h1').textContent = data.heroTitle;
+            document.querySelector('.hero-text p').textContent = data.heroDesc;
+            for(let i = 0; i < 4; i++) {
+                document.getElementById(`pname${i}-display`).textContent = data[`pname${i}`];
+                document.getElementById(`pprice${i}-display`).textContent = data[`pprice${i}`];
+            }
+            document.documentElement.style.setProperty('--color-primary', data.colorPrimary);
+            document.documentElement.style.setProperty('--color-secondary', data.colorSecondary);
+            document.documentElement.style.setProperty('--color-accent', data.colorAccent);
+            updateFonts(data.fontSerif, data.fontSans);
+            document.getElementById('heroImg').src = data.heroImg;
+            document.getElementById('logoNavbar').src = data.logoNavbar;
+            document.getElementById('logoFooter').src = data.logoFooter;
+            for(let i = 0; i < 4; i++) {
+                document.getElementById(`product${i}`).src = data[`product${i}`];
+            }
+        }
+
+        function updateFonts(serif, sans) {
+            const serifMap = {
+                'Playfair Display': "'Playfair Display', serif",
+                'Montserrat': "'Montserrat', sans-serif",
+                'Lora': "'Lora', serif",
+                'Poppins': "'Poppins', sans-serif"
+            };
+            const sansMap = {
+                'Inter': "'Inter', sans-serif",
+                'Poppins': "'Poppins', sans-serif",
+                'Open Sans': "'Open Sans', sans-serif",
+                'Quicksand': "'Quicksand', sans-serif"
+            };
+            document.documentElement.style.setProperty('--font-serif', serifMap[serif]);
+            document.documentElement.style.setProperty('--font-sans', sansMap[sans]);
+        }
+
+        function handleLogoNavbar(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('logoNavbar').src = e.target.result;
+                    document.getElementById('logoNavbarPreview').src = e.target.result;
+                    document.getElementById('logoNavbarPreview').style.display = 'block';
+                    saveAll();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleLogoFooter(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('logoFooter').src = e.target.result;
+                    document.getElementById('logoFooterPreview').src = e.target.result;
+                    document.getElementById('logoFooterPreview').style.display = 'block';
+                    saveAll();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleHeroImage(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('heroImg').src = e.target.result;
+                    saveAll();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleProductImage(index, input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(`product${index}`).src = e.target.result;
+                    saveAll();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function showSuccess() {
+            const msg = document.getElementById('successMsg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2000);
+        }
+
+        async function loadData() {
+            try {
+                const stored = await db.data.get('belsionsData');
+                if(stored) {
+                    document.getElementById('heroTitle').value = stored.value.heroTitle;
+                    document.getElementById('heroDesc').value = stored.value.heroDesc;
+                    document.getElementById('colorPrimary').value = stored.value.colorPrimary;
+                    document.getElementById('colorSecondary').value = stored.value.colorSecondary;
+                    document.getElementById('colorAccent').value = stored.value.colorAccent;
+                    document.getElementById('fontSerif').value = stored.value.fontSerif;
+                    document.getElementById('fontSans').value = stored.value.fontSans;
+                    for(let i = 0; i < 4; i++) {
+                        document.getElementById(`pname${i}`).value = stored.value[`pname${i}`];
+                        document.getElementById(`pprice${i}`).value = stored.value[`pprice${i}`];
+                    }
+                    applyAll(stored.value);
+                }
+            } catch(e) {}
+        }
+
+        function loadFonts() {
+            const link = document.createElement('link');
+            link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Poppins:wght@400;500;600&family=Open+Sans:wght@400;500;600&family=Quicksand:wght@400;500;600&display=swap';
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+        }
+
+        window.addEventListener('load', () => {
+            loadFonts();
+            loadData();
+            showPopupIfFirstTime();
+        });
+
+        // ============= FUNCIONES POPUP =============
+        function showPopupIfFirstTime() {
+            // Mostrar popup después de 800ms
+            if (!localStorage.getItem('popupSeen')) {
+                setTimeout(() => {
+                    document.getElementById('popupOverlay').classList.add('active');
+                }, 800);
+            }
+        }
+
+        function closePopup() {
+            const overlay = document.getElementById('popupOverlay');
+            overlay.classList.add('closing');
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                overlay.classList.remove('closing');
+            }, 400);
+            localStorage.setItem('popupSeen', 'true');
+        }
+
+        function submitPopupForm() {
+            const nombre = document.getElementById('popupNombre').value;
+            const apellido = document.getElementById('popupApellido').value;
+            const email = document.getElementById('popupEmail').value;
+            const celular = document.getElementById('popupCelular').value;
+
+            // Guardar datos en localStorage
+            let registros = JSON.parse(localStorage.getItem('belsionsRegistros') || '[]');
+            registros.push({
+                nombre,
+                apellido,
+                email,
+                celular,
+                fecha: new Date().toLocaleString()
+            });
+            localStorage.setItem('belsionsRegistros', JSON.stringify(registros));
+
+            // Mostrar mensaje de éxito
+            alert('✅ ¡Gracias! Revisa tu email para tu código de descuento 20%');
+            
+            // Limpiar formulario
+            document.getElementById('popupNombre').value = '';
+            document.getElementById('popupApellido').value = '';
+            document.getElementById('popupEmail').value = '';
+            document.getElementById('popupCelular').value = '';
+
+            // Cerrar popup
+            closePopup();
+        }
+
+        // Cerrar popup con Esc
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('popupOverlay').classList.contains('active')) {
+                closePopup();
+            }
+        });
+
+        // Cerrar popup clickeando fuera
+        document.getElementById('popupOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'popupOverlay') {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>
