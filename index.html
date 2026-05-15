@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELSIONS — Camisas y Buzos Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray-1: #0a0a0a;
+            --gray-2: #1a1a1a;
+            --gray-3: #2d2d2d;
+            --gray-4: #4a4a4a;
+            --gray-5: #6b6b6b;
+            --gray-6: #999999;
+            --gray-7: #cccccc;
+            --gray-8: #e8e8e8;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--white);
+            color: var(--black);
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* ADMIN */
+        /* ═══════════════════════════════════════════ */
+
+        .admin-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            background: var(--black);
+            color: var(--white);
+            border: 2px solid var(--gray-7);
+            border-radius: 0;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 5000;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+        }
+
+        .admin-btn:hover {
+            transform: scale(1.1) rotate(-15deg);
+        }
+
+        .admin-panel {
+            position: fixed;
+            right: -520px;
+            top: 0;
+            width: 520px;
+            height: 100vh;
+            background: var(--white);
+            border-left: 1px solid var(--gray-8);
+            z-index: 4999;
+            overflow-y: auto;
+            padding: 50px 40px;
+            transition: right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: -20px 0 80px rgba(0, 0, 0, 0.15);
+        }
+
+        .admin-panel.active {
+            right: 0;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--gray-8);
+        }
+
+        .admin-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .admin-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .admin-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .admin-section {
+            margin-bottom: 50px;
+        }
+
+        .admin-title {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray-5);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--gray-4);
+            border-radius: 2px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--gray-8);
+        }
+
+        .upload-area:hover {
+            border-color: var(--black);
+            background: var(--white);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            color: var(--gray-4);
+            font-weight: 500;
+        }
+
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .asset-item {
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            border: 1px solid var(--gray-8);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .asset-item:hover {
+            border-color: var(--black);
+            transform: scale(1.03);
+        }
+
+        .asset-item img,
+        .asset-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .asset-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--black);
+            border: none;
+            color: var(--white);
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .asset-item:hover .asset-delete {
+            opacity: 1;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: var(--gray-8);
+            border-left: 3px solid var(--black);
+            font-size: 0.85rem;
+            color: var(--black);
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* NAV */
+        /* ═══════════════════════════════════════════ */
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 2.5rem 5%;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid var(--gray-8);
+            transition: all 0.6s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        nav.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            border-bottom: 2px solid var(--black);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem 5%;
+        }
+
+        .nav-container {
+            max-width: 2000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 4rem;
+        }
+
+        nav a {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--black);
+            opacity: 0.6;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        nav a:hover {
+            opacity: 1;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--black);
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* HERO VIDEO 3D */
+        /* ═══════════════════════════════════════════ */
+
+        .hero-video {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--black);
+            margin-top: 80px;
+            perspective: 1200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-3d-wrapper {
+            position: relative;
+            width: 95%;
+            height: 95%;
+            max-width: 1400px;
+            border: 1px solid var(--gray-3);
+            overflow: hidden;
+            background: var(--black);
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.8),
+                        inset 0 0 40px rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .video-3d-wrapper:hover {
+            transform: rotateX(2deg) rotateY(-2deg) translateZ(20px);
+            box-shadow: 0 20px 100px rgba(0, 0, 0, 0.9),
+                        inset 0 0 60px rgba(255, 255, 255, 0.15);
+        }
+
+        .hero-video video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .video-label {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            z-index: 10;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--white);
+            opacity: 0.6;
+            font-weight: 700;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* SECCIONES */
+        /* ═══════════════════════════════════════════ */
+
+        section {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-padding {
+            padding: 150px 5% 130px;
+        }
+
+        .container {
+            max-width: 2000px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gray-5);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 6vw, 4rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 3rem;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        #products {
+            background: var(--gray-8);
+        }
+
+        #about {
+            background: var(--white);
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* PRODUCTOS */
+        /* ═══════════════════════════════════════════ */
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 60px;
+            margin-top: 80px;
+            perspective: 1000px;
+        }
+
+        .product-card {
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            perspective: 1000px;
+        }
+
+        .product-card:hover {
+            transform: rotateX(-5deg) rotateY(5deg) translateZ(30px) scale(1.02);
+        }
+
+        .product-image {
+            aspect-ratio: 1 / 1.2;
+            overflow: hidden;
+            border: 1px solid var(--gray-7);
+            background: var(--white);
+            margin-bottom: 20px;
+            transform-style: preserve-3d;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-style: preserve-3d;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05) rotateX(3deg);
+            filter: brightness(0.95);
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-desc {
+            font-size: 0.85rem;
+            color: var(--gray-5);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .product-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--black);
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* ABOUT */
+        /* ═══════════════════════════════════════════ */
+
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+            color: var(--gray-4);
+            line-height: 1.9;
+        }
+
+        .about-content p {
+            margin-bottom: 2rem;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* FOOTER */
+        /* ═══════════════════════════════════════════ */
+
+        footer {
+            background: var(--black);
+            color: var(--white);
+            padding: 100px 5% 50px;
+            border-top: 1px solid var(--gray-3);
+        }
+
+        footer p {
+            font-size: 0.8rem;
+            color: var(--gray-6);
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* RESPONSIVE */
+        /* ═══════════════════════════════════════════ */
+
+        @media (max-width: 1024px) {
+            .admin-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            nav ul {
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .section-padding {
+                padding: 100px 5% 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ADMIN -->
+    <button class="admin-btn" onclick="toggleAdmin()">◉</button>
+
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h2>Editor</h2>
+            <button class="admin-close" onclick="toggleAdmin()">✕</button>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-title">Logo Oficial</div>
+            <div class="upload-area" onclick="document.getElementById('logoUpload').click()">
+                <div class="upload-icon">📱</div>
+                <div class="upload-text">Click para subir logo</div>
+                <input type="file" id="logoUpload" accept="image/*" onchange="uploadLogo(event)">
+            </div>
+            <div id="logoPreview" style="margin-top: 15px; text-align: center; min-height: 60px; display: flex; align-items: center; justify-content: center;"></div>
+            <div id="logoStatus" class="status"></div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-title">Videos Hero (Hasta 3)</div>
+            <div class="upload-area" onclick="document.getElementById('videosUpload').click()">
+                <div class="upload-icon">🎬</div>
+                <div class="upload-text">Click para subir videos</div>
+                <input type="file" id="videosUpload" accept="video/mp4" multiple onchange="uploadVideos(event)">
+            </div>
+            <div class="asset-grid" id="videosPreview"></div>
+            <div id="videosStatus" class="status"></div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-title">Productos - Camisas (Hasta 6)</div>
+            <div class="upload-area" onclick="document.getElementById('shirtsUpload').click()">
+                <div class="upload-icon">👕</div>
+                <div class="upload-text">Click para subir fotos</div>
+                <input type="file" id="shirtsUpload" accept="image/*" multiple onchange="uploadShirts(event)">
+            </div>
+            <div class="asset-grid" id="shirtsPreview"></div>
+            <div id="shirtsStatus" class="status"></div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-title">Productos - Buzos (Hasta 6)</div>
+            <div class="upload-area" onclick="document.getElementById('hoodiesUpload').click()">
+                <div class="upload-icon">🧥</div>
+                <div class="upload-text">Click para subir fotos</div>
+                <input type="file" id="hoodiesUpload" accept="image/*" multiple onchange="uploadHoodies(event)">
+            </div>
+            <div class="asset-grid" id="hoodiesPreview"></div>
+            <div id="hoodiesStatus" class="status"></div>
+        </div>
+    </div>
+
+    <!-- NAV -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div id="navLogo" class="nav-logo">BELSIONS</div>
+            <ul>
+                <li><a href="#products">Productos</a></li>
+                <li><a href="#about">Sobre Nosotros</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- HERO VIDEO 3D -->
+    <section class="hero-video">
+        <div class="video-3d-wrapper" id="videoWrapper">
+            <div class="video-label">Campaña</div>
+            <video id="heroVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; display: block; object-fit: cover;">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-library/sample/BigBuckBunny.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section id="products" class="section-padding">
+        <div class="container">
+            <div class="section-label">Colecciones</div>
+            <h2 class="section-title">Camisas y Buzos</h2>
+            <div class="products-grid" id="productsContent"></div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="section-padding">
+        <div class="container">
+            <div class="section-label">BELSIONS</div>
+            <h2 class="section-title">Básicos de Calidad</h2>
+            <div class="about-content">
+                <p>BELSIONS produce camisas y buzos de la más alta calidad. Cada prenda es diseñada con obsesión por los detalles, utilizando los mejores materiales disponibles.</p>
+                <p>Nuestro enfoque minimalista garantiza piezas atemporales que trascienden tendencias. Calidad excepcional, diseño limpio, presencia atemporal.</p>
+                <p>La simplicidad es nuestro lenguaje. La excelencia, nuestro compromiso.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2026 BELSIONS</p>
+        <p>CAMISAS Y BUZOS PREMIUM</p>
+    </footer>
+
+    <script>
+        // STATE
+        let appState = {
+            logo: null,
+            videos: [],
+            shirts: [],
+            hoodies: []
+        };
+
+        let currentVideoIndex = 0;
+
+        // ADMIN
+        function toggleAdmin() {
+            document.getElementById('adminPanel').classList.toggle('active');
+        }
+
+        function showStatus(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // UPLOADS
+        function uploadLogo(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                appState.logo = evt.target.result;
+                
+                // Mostrar en navbar
+                const navLogo = document.getElementById('navLogo');
+                navLogo.innerHTML = `<img src="${appState.logo}" style="height: 30px; width: auto; object-fit: contain;">`;
+                
+                // Mostrar en preview
+                const preview = document.getElementById('logoPreview');
+                preview.innerHTML = `<img src="${appState.logo}" style="height: 50px; width: auto; object-fit: contain;">`;
+                
+                showStatus('logoStatus', '✓ Logo cargado');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function uploadVideos(e) {
+            const files = Array.from(e.target.files).slice(0, 3);
+            let loaded = 0;
+            appState.videos = [];
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    appState.videos.push(evt.target.result);
+                    loaded++;
+                    if (loaded === files.length) {
+                        loadFirstVideo();
+                        updateVideosPreview();
+                        showStatus('videosStatus', `✓ ${files.length} videos`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function uploadShirts(e) {
+            const files = Array.from(e.target.files).slice(0, 6);
+            let loaded = 0;
+            appState.shirts = [];
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    appState.shirts.push(evt.target.result);
+                    loaded++;
+                    if (loaded === files.length) {
+                        renderProducts();
+                        updateShirtsPreview();
+                        showStatus('shirtsStatus', `✓ ${files.length} camisas`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function uploadHoodies(e) {
+            const files = Array.from(e.target.files).slice(0, 6);
+            let loaded = 0;
+            appState.hoodies = [];
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    appState.hoodies.push(evt.target.result);
+                    loaded++;
+                    if (loaded === files.length) {
+                        renderProducts();
+                        updateHoodiesPreview();
+                        showStatus('hoodiesStatus', `✓ ${files.length} buzos`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function loadFirstVideo() {
+            if (appState.videos.length > 0) {
+                const source = document.querySelector('#heroVideo source');
+                const video = document.getElementById('heroVideo');
+                source.src = appState.videos[0];
+                video.load();
+                
+                // Forzar reproducción
+                video.play().catch(err => {
+                    console.log('Autoplay bloqueado, usuario debe interactuar primero');
+                });
+            }
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContent');
+            let html = '';
+
+            appState.shirts.forEach((img, idx) => {
+                html += `
+                    <div class="product-card">
+                        <div class="product-image"><img src="${img}" alt="Camisa"></div>
+                        <div class="product-name">Camisa ${idx + 1}</div>
+                        <div class="product-desc">100% algodón premium. Corte perfecto, costura impecable.</div>
+                        <div class="product-price">$89.00</div>
+                    </div>
+                `;
+            });
+
+            appState.hoodies.forEach((img, idx) => {
+                html += `
+                    <div class="product-card">
+                        <div class="product-image"><img src="${img}" alt="Buzo"></div>
+                        <div class="product-name">Buzo ${idx + 1}</div>
+                        <div class="product-desc">Algodón orgánico premium. Comodidad absoluta, calidad duradera.</div>
+                        <div class="product-price">$129.00</div>
+                    </div>
+                `;
+            });
+
+            if (html === '') {
+                html = '<p style="opacity: 0.4; padding: 40px; grid-column: 1 / -1;">Sube productos</p>';
+            }
+
+            container.innerHTML = html;
+
+            // Trigger GSAP animations
+            document.querySelectorAll('.product-card').forEach((el, idx) => {
+                gsap.fromTo(el, 
+                    { opacity: 0, y: 60, rotationX: 30 },
+                    {
+                        opacity: 1, 
+                        y: 0,
+                        rotationX: 0,
+                        duration: 0.8,
+                        delay: idx * 0.1,
+                        scrollTrigger: {
+                            trigger: el,
+                            start: 'top 80%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            });
+        }
+
+        function updateVideosPreview() {
+            const preview = document.getElementById('videosPreview');
+            preview.innerHTML = appState.videos.map((video, idx) => `
+                <div class="asset-item" onclick="switchVideo(${idx})">
+                    <video src="${video}" style="width:100%; height:100%; object-fit:cover;"></video>
+                    <button class="asset-delete" onclick="deleteVideo(${idx}); event.stopPropagation();">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function updateShirtsPreview() {
+            const preview = document.getElementById('shirtsPreview');
+            preview.innerHTML = appState.shirts.map((img, idx) => `
+                <div class="asset-item">
+                    <img src="${img}" alt="">
+                    <button class="asset-delete" onclick="deleteShirt(${idx})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function updateHoodiesPreview() {
+            const preview = document.getElementById('hoodiesPreview');
+            preview.innerHTML = appState.hoodies.map((img, idx) => `
+                <div class="asset-item">
+                    <img src="${img}" alt="">
+                    <button class="asset-delete" onclick="deleteHoodie(${idx})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function switchVideo(idx) {
+            if (appState.videos[idx]) {
+                const source = document.querySelector('#heroVideo source');
+                const video = document.getElementById('heroVideo');
+                source.src = appState.videos[idx];
+                video.load();
+                
+                // Forzar reproducción después de cargar
+                video.play().catch(err => {
+                    console.log('Autoplay bloqueado');
+                });
+            }
+        }
+
+        function deleteVideo(idx) {
+            appState.videos.splice(idx, 1);
+            updateVideosPreview();
+        }
+
+        function deleteShirt(idx) {
+            appState.shirts.splice(idx, 1);
+            renderProducts();
+            updateShirtsPreview();
+        }
+
+        function deleteHoodie(idx) {
+            appState.hoodies.splice(idx, 1);
+            renderProducts();
+            updateHoodiesPreview();
+        }
+
+        // MOUSE TRACKING HERO VIDEO
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 10 - 5;
+            mouseY = (e.clientY / window.innerHeight) * 10 - 5;
+
+            const wrapper = document.getElementById('videoWrapper');
+            if (window.scrollY < window.innerHeight) {
+                wrapper.style.transform = `rotateX(${mouseY * 0.5}deg) rotateY(${mouseX * 0.5}deg)`;
+            }
+        });
+
+        // NAV SCROLL
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 100);
+        });
+
+        // GSAP INIT
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Scroll animations
+        document.querySelectorAll('.section-title').forEach(el => {
+            gsap.fromTo(el,
+                { opacity: 0, y: 40, rotationX: 20 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    rotationX: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        });
+    </script>
+
+</body>
+</html>
